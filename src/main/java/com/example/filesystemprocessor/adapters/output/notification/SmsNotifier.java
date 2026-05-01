@@ -1,5 +1,8 @@
 package com.example.filesystemprocessor.adapters.output.notification;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class SmsNotifier extends AbstractNotifier {
 
     @Override

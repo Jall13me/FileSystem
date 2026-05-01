@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>File Processor - Archivos Reales</title>
+</head>
+<body>
+
+<h1>File Processor - Pruebas con Archivos Reales</h1>
+
+<hr>
+
+<h2>Subir archivo individual</h2>
+
+<label>Archivo:</label>
+<br>
+<input id="singleFile" type="file">
+<br><br>
+
+<label>Tipo de archivo:</label>
+<br>
+<select id="singleFileType">
+    <option value="INVOICE">INVOICE</option>
+    <option value="CONTRACT">CONTRACT</option>
+    <option value="REPORT">REPORT</option>
+</select>
+<br><br>
+
+<button onclick="uploadSingleFile()">Subir archivo</button>
+
+<hr>
+
+<h2>Subir varios archivos como carpeta</h2>
+
+<p>
+    Selecciona varios archivos. El backend inferirá el tipo según la extensión:
+</p>
+
+<ul>
+    <li>.xml / .json → INVOICE</li>
+    <li>.pdf → CONTRACT</li>
+    <li>.csv / .xlsx → REPORT</li>
+</ul>
+
+<input id="folderFiles" type="file" multiple>
+<br><br>
+
+<button onclick="uploadFolderFiles()">Subir carpeta</button>
+
+<hr>
+
+<h2>Repositorio</h2>
+
+<button onclick="listFiles()">Listar archivos guardados</button>
+<button onclick="clearFiles()">Limpiar repositorio</button>
+
+<hr>
+
+<h2>Resultado</h2>
+
+<pre id="result"></pre>
+
+<script>
+    const BASE_URL = "http://localhost:8083/api/files";
+
+    function showResult(data) {
+        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function uploadSingleFile() {
+        const fileInput = document.getElementById("singleFile");
+        const fileType = document.getElementById("singleFileType").value;
+
+        if (!fileInput.files.length) {
+            showResult({
+                error: "Debes seleccionar un archivo"
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        formData.append("fileType", fileType);
+
+        try {
+            const response = await fetch(`${BASE_URL}/upload`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showResult({
+                error: "No se pudo subir el archivo",
+                detail: error.message
+            });
+        }
+    }
+
+    async function uploadFolderFiles() {
+        const fileInput = document.getElementById("folderFiles");
+
+        if (!fileInput.files.length) {
+            showResult({
+                error: "Debes seleccionar al menos un archivo"
+            });
+            return;
+        }
+
+        const formData = new FormData();
+
+        for (const file of fileInput.files) {
+            formData.append("files", file);
+        }
+
+        try {
+            const response = await fetch(`${BASE_URL}/upload/folder`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showResult({
+                error: "No se pudieron subir los archivos",
+                detail: error.message
+            });
+        }
+    }
+
+    async function listFiles() {
+        try {
+            const response = await fetch(BASE_URL);
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showResult({
+                error: "No se pudieron listar los archivos",
+                detail: error.message
+            });
+        }
+    }
+
+    async function clearFiles() {
+        try {
+            const response = await fetch(BASE_URL, {
+                method: "DELETE"
+            });
+
+            if (response.status === 204) {
+                showResult({
+                    message: "Repositorio limpiado correctamente"
+                });
+                return;
+            }
+
+            showResult({
+                message: "Respuesta inesperada",
+                status: response.status
+            });
+        } catch (error) {
+            showResult({
+                error: "No se pudo limpiar el repositorio",
+                detail: error.message
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

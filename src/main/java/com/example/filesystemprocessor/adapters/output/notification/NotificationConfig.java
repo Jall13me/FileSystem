@@ -1,10 +1,12 @@
 package com.example.filesystemprocessor.adapters.output.notification;
 
 import com.example.filesystemprocessor.file.core.model.FileType;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class NotificationConfig {
 
     private final Map<FileType, List<NotifierType>> channelsByFileType = Map.of(

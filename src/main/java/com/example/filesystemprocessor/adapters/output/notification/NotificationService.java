@@ -2,12 +2,14 @@ package com.example.filesystemprocessor.adapters.output.notification;
 
 import com.example.filesystemprocessor.file.core.model.File;
 import com.example.filesystemprocessor.ports.output.Notifier;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Service
 public class NotificationService {
 
     private final Map<NotifierType, Notifier> notifiersByType;

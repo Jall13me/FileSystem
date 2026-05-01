@@ -8,5 +8,4 @@ public interface Notifier {
     NotifierType getType();
 
     void notify(File file, String messageKey);
-
 }
