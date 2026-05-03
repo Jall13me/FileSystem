@@ -10,7 +10,13 @@ import com.example.filesystemprocessor.file.core.service.FileProcessingService;
 import com.example.filesystemprocessor.file.core.service.FileStorageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,37 +31,25 @@ public class FileUploadController {
     private final FileProcessingService fileProcessingService;
     private final FileStorageService fileStorageService;
 
-    public FileUploadController(
-            FileProcessingService fileProcessingService,
-            FileStorageService fileStorageService
-    ) {
+    public FileUploadController(FileProcessingService fileProcessingService, FileStorageService fileStorageService) {
         this.fileProcessingService = fileProcessingService;
         this.fileStorageService = fileStorageService;
     }
 
-    @PostMapping(
-            value = "/upload",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProcessResult> uploadFile(
             @RequestParam("file") MultipartFile multipartFile,
             @RequestParam("fileType") FileType fileType
     ) throws IOException {
-
         File file = toDomainFile(multipartFile, fileType);
         ProcessResult result = fileProcessingService.processFile(file);
-
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping(
-            value = "/upload/folder",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/upload/folder", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProcessResult> uploadFolder(
             @RequestParam("files") List<MultipartFile> multipartFiles
     ) throws IOException {
-
         Folder folder = new Folder("uploaded-folder");
 
         for (MultipartFile multipartFile : multipartFiles) {
@@ -65,14 +59,12 @@ public class FileUploadController {
         }
 
         ProcessResult result = fileProcessingService.processFolder(folder);
-
         return ResponseEntity.ok(result);
     }
 
     @GetMapping
     public ResponseEntity<List<String>> listFiles() {
-        List<String> files = fileStorageService.listStoredFileNames();
-        return ResponseEntity.ok(files);
+        return ResponseEntity.ok(fileStorageService.listStoredFileNames());
     }
 
     @DeleteMapping
@@ -83,7 +75,6 @@ public class FileUploadController {
 
     private File toDomainFile(MultipartFile multipartFile, FileType fileType) throws IOException {
         String content = new String(multipartFile.getBytes(), StandardCharsets.UTF_8);
-
         return new File(
                 multipartFile.getOriginalFilename(),
                 fileType,
